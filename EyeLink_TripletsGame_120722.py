@@ -424,7 +424,6 @@ def start_eye_tracker(trial_index, trial_type):
         if (not el_tracker.isConnected()) or el_tracker.breakPressed():
             terminate_task()
             return pylink.ABORT_EXPT
-            print('neden')
         break
         # # drift-check and re-do camera setup if ESCAPE is pressed
         # try:
@@ -1043,8 +1042,10 @@ shuffle(sameDiff)
 #hard-coded names of all images and trial types (counterbalanced).
 #could change these to have items come from a csv at this point.
 numItems = 210
-numEncoding = 5
-numRetrieval = 6
+numTotencoding = 50
+numEncoding = 2
+numTotretrieval = 80
+numRetrieval = 2
 
 # create final stimuli list
 for i in range(0, numItems, 3):
@@ -1053,7 +1054,7 @@ for i in range(0, numItems, 3):
     trialPics.append(allPics[i:i+3])
     
 # these triplets will be shown during encoding
-encodingPics = trialPics[0:numEncoding]
+encodingPics = trialPics[0:numTotencoding]
 
 #70 triplets made from 210 images.
 
@@ -1231,6 +1232,10 @@ for thisEncodingTrial in EncodingTrials:
 # ------Prepare to start Routine "fix"-------
     continueRoutine = True
     routineTimer.add(2.000000)
+    trial_index = EncodingTrials.thisRepN
+    #start recording eye-movements
+    start_eye_tracker(trial_index, trial_category)
+    
     # update component parameters for each repeat
     # keep track of which components have finished
     fixComponents = [fix]
@@ -1264,8 +1269,7 @@ for thisEncodingTrial in EncodingTrials:
             win.timeOnFlip(fix, 'tStartRefresh')  # time at next scr refresh
             fix.setAutoDraw(True)
         if fix.status == STARTED:
-            el_tracker.sendMessage('fix.running %s' % fixClock.getTime())
-            print('fix.RUNS %s' % fixClock.getTime())
+            el_tracker.sendMessage('fixation %s' % fixClock.getTime())
             # is it time to stop? (based on global clock, using actual start)
             if tThisFlipGlobal > fix.tStartRefresh + 1.5-frameTolerance:
                 # keep track of stop time/frame for later
@@ -2024,10 +2028,10 @@ for thisEncodingTrial in EncodingTrials:
             thisComponent.setAutoDraw(False)
     if MethodMouse.clicked_name == methodAns:
         EncodingTrials.addData ("methodCheck", '1')
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' % "1")
+        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' % '1')
     else:
         EncodingTrials.addData ("methodCheck", '0')
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' % "0")
+        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' % '0')
         el_tracker.sendMessage('methodEnding %s' % MethodCheckClock.getTime())
     
     #store whether or not they answered correctly for the "same" or "different" trial type.
@@ -2709,6 +2713,13 @@ while continueRoutine:
     tThisFlipGlobal = win.getFutureFlipTime(clock=None)
     frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
     # update/draw components on each frame
+    theseKeys = start2.getKeys(keyList=['space','q'], waitRelease=False)
+    _start2_allKeys.extend(theseKeys)
+    if len(_start2_allKeys):
+        start2.keys = _start2_allKeys[-1].name  # just the last key pressed
+        start2.rt = _start2_allKeys[-1].rt
+        # a response ends the routine
+        continueRoutine = False
     
     # *BlockBreak* updates
     if BlockBreak.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
@@ -2727,6 +2738,13 @@ while continueRoutine:
             BlockBreak.frameNStop = frameN  # exact frame index
             win.timeOnFlip(BlockBreak, 'tStopRefresh')  # time at next scr refresh
             BlockBreak.setAutoDraw(False)
+            theseKeys = start2.getKeys(keyList=['space','q'], waitRelease=False)
+            _start2_allKeys.extend(theseKeys)
+            if len(_start2_allKeys):
+                start2.keys = _start2_allKeys[-1].name  # just the last key pressed
+                start2.rt = _start2_allKeys[-1].rt
+                # a response ends the routine
+                continueRoutine = False
     
     # *text_4* updates
     if text_4.status == NOT_STARTED and tThisFlip >= 180.0-frameTolerance:
@@ -2751,7 +2769,7 @@ while continueRoutine:
         win.callOnFlip(start2.clock.reset)  # t=0 on next screen flip
         win.callOnFlip(start2.clearEvents, eventType='keyboard')  # clear events on next screen flip
     if start2.status == STARTED and not waitOnFlip:
-        theseKeys = start2.getKeys(keyList=['space'], waitRelease=False)
+        theseKeys = start2.getKeys(keyList=['space','q'], waitRelease=False)
         _start2_allKeys.extend(theseKeys)
         if len(_start2_allKeys):
             start2.keys = _start2_allKeys[-1].name  # just the last key pressed
@@ -2800,6 +2818,7 @@ el_tracker.sendMessage('breakEnding %s' % break_2Clock.getTime())
 thisExp.nextEntry()
 # the Routine "break_2" was not non-slip safe, so reset the non-slip timer
 routineTimer.reset()
+#Starting Encoding Block 2 after the break!
 
 # set up handler to look after randomisation of conditions etc
 EncodingBlock2 = data.TrialHandler(nReps=25, method='random', 
@@ -2823,6 +2842,10 @@ for thisEncodingBlock2 in EncodingBlock2:
     # ------Prepare to start Routine "fix"-------
     continueRoutine = True
     routineTimer.add(2.000000)
+    
+    trial_index = EncodingTrials.thisRepN
+    #start recording eye-movements
+    start_eye_tracker(trial_index, trial_category)
     # update component parameters for each repeat
     # keep track of which components have finished
     fixComponents = [fix]
@@ -2857,7 +2880,7 @@ for thisEncodingBlock2 in EncodingBlock2:
             win.timeOnFlip(fix, 'tStartRefresh')  # time at next scr refresh
             fix.setAutoDraw(True)
         if fix.status == STARTED:
-            el_tracker.sendMessage('fix.running %s' % fixClock.getTime())
+            el_tracker.sendMessage('fixation %s' % fixClock.getTime())
             # is it time to stop? (based on global clock, using actual start)
             if tThisFlipGlobal > fix.tStartRefresh + 1.5-frameTolerance:
                 # keep track of stop time/frame for later
@@ -2865,12 +2888,7 @@ for thisEncodingBlock2 in EncodingBlock2:
                 fix.frameNStop = frameN  # exact frame index
                 win.timeOnFlip(fix, 'tStopRefresh')  # time at next scr refresh
                 fix.setAutoDraw(False)
-                el_tracker.sendMessage('fix.running %s' % fixClock.getTime())
-                print ('fix.RUNS %s' %fixClock.getTime())
-                status_msg = 'fix.run %s' % fixClock.getTime()
-                el_tracker.sendCommand("record_status_message '%s'" % status_msg)
-                print(status_msg)
-                el_tracker.sendMessage('fix.Running %s' % status_msg)
+                el_tracker.sendMessage('fixation %s' % fixClock.getTime())
         # check for quit (typically the Esc key)
         if endExpNow or defaultKeyboard.getKeys(keyList=["escape"]):
             thisExp.saveAsWideText(filename+'.csv', delim=',')
