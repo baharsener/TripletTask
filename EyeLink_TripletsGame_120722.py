@@ -197,7 +197,6 @@ el_tracker.sendCommand("link_event_filter = %s" % link_event_flags)
 el_tracker.sendCommand("link_sample_data = %s" % link_sample_flags)
 
 
-#
 # Optional tracking parameters
 # Sample rate, 250, 500, 1000, or 2000, check your tracker specification
 # if eyelink_ver > 2:
@@ -394,16 +393,16 @@ def start_eye_tracker(trial_index, trial_type):
     # send a "TRIALID" message to mark the start of a trial, see Data
     # Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
     if trial_type=='encoding':    
-        el_tracker.sendMessage('TrialID %d' % trial_index)
+        el_tracker.sendMessage('trialIndex %d' % trial_index)
         # record_status_message : show some info on the Host PC
         # here we show how many trial has been tested
         status_msg = 'eTrial number %d' % trial_index
         print(status_msg)
     elif trial_type=='retrieval':
-        el_tracker.sendMessage('retTrialID %d' % trial_index)
+        el_tracker.sendMessage('trialIndex %d' % rtrial_index)
         # record_status_message : show some info on the Host PC
         # here we show how many trial has been tested
-        status_msg = 'retTrial number %d' % trial_index
+        status_msg = 'retTrial number %d' % rtrial_index
         print(status_msg)
 
     el_tracker.sendCommand("record_status_message '%s'" % status_msg)
@@ -1044,7 +1043,7 @@ shuffle(sameDiff)
 #could change these to have items come from a csv at this point.
 numItems = 210
 numTotencoding = 50
-numEncoding = 3
+numEncoding = 2
 numTotretrieval = 80
 numRetrieval = 2
 
@@ -1222,7 +1221,6 @@ if thisEncodingTrial != None:
 # record category of trial: encoding/retrieval
 for thisEncodingTrial in EncodingTrials:
     trial_category = 'encoding'
-
     currentLoop = EncodingTrials
     # abbreviate parameter names if possible (e.g. rgb = thisEncodingTrial.rgb)
     if thisEncodingTrial != None:
@@ -1314,6 +1312,7 @@ for thisEncodingTrial in EncodingTrials:
     trial_index = EncodingTrials.thisRepN
     el_tracker.sendMessage('!V TRIAL_VAR participant_ID %s' % expInfo['participant'])
     el_tracker.sendMessage('!V TRIAL_VAR trialcategory %s' %trial_category)
+    el_tracker.sendMessage('!V TRIAL_VAR trialIndex %d' %trial_index)
 
     start_eye_tracker(trial_index, trial_category)
     # update component parameters for each repeat
@@ -1321,6 +1320,7 @@ for thisEncodingTrial in EncodingTrials:
     #iterate through trial type and set a new one for each trial
     trialType = trialTypes[eTrials]
     method_Trial = sameDiff[eTrials]
+    el_tracker.sendMessage('!V TRIAL_VAR trialType %s' %trialType)
     
     #positions
     leftPos = -0.5, 0.0
@@ -1356,15 +1356,10 @@ for thisEncodingTrial in EncodingTrials:
     triplet1 = 'images/'+encodingPics[eTrials][0]+'.png'
     triplet2 = 'images/'+encodingPics[eTrials][1]+'.png'
     triplet3 = 'images/'+encodingPics[eTrials][2]+'.png'
-    
     EncodingTrials.addData ("trialOrder", trialType)
-    el_tracker.sendMessage('!V TRIAL_VAR trialOrder %s' %trialType)
     thisExp.addData("triplet1", triplet1)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
     thisExp.addData("triplet2", triplet2)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
     thisExp.addData("triplet3", triplet3)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
     Triplet1.setPos(firstPos)
     Triplet1.setImage(triplet1)
     Triplet2.setPos(secondPos)
@@ -1391,7 +1386,6 @@ for thisEncodingTrial in EncodingTrials:
     _timeToFirstFrame = win.getFutureFlipTime(clock="now")
     first_viewClock.reset(-_timeToFirstFrame)  # t0 is time of first possible flip
     frameN = -1
-    el_tracker.sendMessage('eTrial %d' %trial_index)
     
     # -------Run Routine "first_view"-------
     while continueRoutine:
@@ -1612,7 +1606,6 @@ for thisEncodingTrial in EncodingTrials:
         samePics.append(encodingPics[eTrials][2])
         EncodingTrials.addData("encodingType","same")
         encodingType = "same"
-        el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
     else:
         nextTrial = random.choice(trialTypes)
         while nextTrial == trialType:
@@ -1627,9 +1620,13 @@ for thisEncodingTrial in EncodingTrials:
         triplet3 = 'images/'+encodingPics[eTrials][list[2]]+'.png'
         EncodingTrials.addData("encodingType","diff")
         encodingType = "diff"
-        el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
-    
-    #have to re-state positions and trial types
+    el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
+    el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
+
+ #have to re-state positions and trial types
     if trialType == 'LMR':
         firstPos = leftPos
         secondPos = midPos
@@ -1657,13 +1654,9 @@ for thisEncodingTrial in EncodingTrials:
         thirdPos = leftPos
     
     EncodingTrials.addData("triplet1", triplet1)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
     EncodingTrials.addData("triplet2", triplet2)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
     EncodingTrials.addData("triplet3", triplet3)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
     EncodingTrials.addData("nextTrial", nextTrial)
-    el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
     img1.setPos(firstPos)
     img1.setImage(triplet1)
     img2.setPos(secondPos)
@@ -1782,7 +1775,6 @@ for thisEncodingTrial in EncodingTrials:
             logging.flush()
             terminate_task()
             core.quit()
-
         
         # check if all components have finished
         if not continueRoutine:  # a component has requested a forced-end of Routine
@@ -1802,8 +1794,7 @@ for thisEncodingTrial in EncodingTrials:
         if hasattr(thisComponent, "setAutoDraw"):
             thisComponent.setAutoDraw(False)
     eTrials = eTrials + 1
-    EncodingTrials.addData("encodingTrials", str(eTrials))
-    el_tracker.sendMessage('!V TRIAL_VAR eTrials %s' %eTrials)
+    el_tracker.sendMessage('!V TRIAL_VAR eTrials %d' %eTrials) 
     EncodingTrials.addData('img1.started', img1.tStartRefresh)
     EncodingTrials.addData('img1.stopped', img1.tStopRefresh)
     EncodingTrials.addData('img2.started', img2.tStartRefresh)
@@ -1820,6 +1811,7 @@ for thisEncodingTrial in EncodingTrials:
     EncodingTrials.addData('sound_pop6.started', sound_pop6.tStartRefresh)
     EncodingTrials.addData('sound_pop6.stopped', sound_pop6.tStopRefresh)
     el_tracker.sendMessage('secondviewEnding %s' % second_viewClock.getTime())
+    
     # the Routine "second_view" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -1937,6 +1929,7 @@ for thisEncodingTrial in EncodingTrials:
         frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
         # update/draw components on each frame
         
+        
         # *text* updates
         if text.status == NOT_STARTED and tThisFlip >= 0.0-frameTolerance:
             # keep track of start time/frame for later
@@ -2042,16 +2035,14 @@ for thisEncodingTrial in EncodingTrials:
     if MethodMouse.clicked_name == methodAns:
         EncodingTrials.addData ("methodCheck", '1')
         methodCheck = 1
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
     else:
         EncodingTrials.addData ("methodCheck", '0')
         methodCheck = 0
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
-        el_tracker.sendMessage('methodEnding %s' % MethodCheckClock.getTime())
+
     
     #store whether or not they answered correctly for the "same" or "different" trial type.
     thisExp.addData("Method Clicked", MethodMouse.clicked_name);
-    el_tracker.sendMessage('!V TRIAL_VAR methodClicked %s' %MethodMouse.clicked_name)
+    el_tracker.sendMessage('methodEnding %s' % MethodCheckClock.getTime())
     EncodingTrials.addData('text.started', text.tStartRefresh)
     EncodingTrials.addData('text.stopped', text.tStopRefresh)
     EncodingTrials.addData('sameText.started', sameText.tStartRefresh)
@@ -2073,16 +2064,8 @@ for thisEncodingTrial in EncodingTrials:
     if len(MethodMouse.clicked_name): EncodingTrials.addData('MethodMouse.clicked_name', MethodMouse.clicked_name[0])
     EncodingTrials.addData('MethodMouse.started', MethodMouse.tStart)
     EncodingTrials.addData('MethodMouse.stopped', MethodMouse.tStop)
-     
-    #store eye-tracking related data in edf
-    # record trial variables to the EDF data file, for details, see Data
-    # Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
-    el_tracker.sendMessage('!V TRIAL_VAR trialID %s' % trial_index)
-    el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' % trial_category)
-
-    # send a 'TRIAL_RESULT' message to mark the end of trial, see Data
-    # Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
-    el_tracker.sendMessage('TRIAL_RESULT %d' % pylink.TRIAL_OK)
+    el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
+    el_tracker.sendMessage('!V TRIAL_VAR methodClicked %s' %MethodMouse.clicked_name)
 
     # the Routine "MethodCheck" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
@@ -2161,6 +2144,24 @@ for thisEncodingTrial in EncodingTrials:
     EncodingTrials.addData('clickedSound.started', clickedSound.tStartRefresh)
     EncodingTrials.addData('clickedSound.stopped', clickedSound.tStopRefresh)
     thisExp.nextEntry()
+#store eye-tracking related data in edf
+# record trial variables to the EDF data file, for details, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('!V TRIAL_VAR trialIndex %d' % trial_index)
+el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' % trial_category)
+EncodingTrials.addData("encodingTrials", str(eTrials))
+el_tracker.sendMessage('!V TRIAL_VAR eTrials %d' %eTrials)   
+el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
+el_tracker.sendMessage('!V TRIAL_VAR methodClicked %s' %MethodMouse.clicked_name)
+el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
+el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
+el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
+el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
+el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
+    
+    # send a 'TRIAL_RESULT' message to mark the end of trial, see Data
+    # Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('TRIAL_RESULT %d' % pylink.TRIAL_OK)
     
 # completed numEncoding repeats of 'EncodingTrials'
 
@@ -2243,6 +2244,7 @@ if thisRetrievalTrial != None:
         exec('{} = thisRetrievalTrial[paramName]'.format(paramName))
 
 for thisRetrievalTrial in RetrievalTrials:
+    trial_category = 'retrieval'
     currentLoop = RetrievalTrials
     # abbreviate parameter names if possible (e.g. rgb = thisRetrievalTrial.rgb)
     if thisRetrievalTrial != None:
@@ -2253,7 +2255,8 @@ for thisRetrievalTrial in RetrievalTrials:
     continueRoutine = True
     rtrial_index = RetrievalTrials.thisRepN
     trial_category= 'retrieval'
-    el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' % trial_category)
+    el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' %trial_category)
+    el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %rtrial_index)
 
     start_eye_tracker(rtrial_index, trial_category)
     # update component parameters for each repeat
@@ -2278,9 +2281,7 @@ for thisRetrievalTrial in RetrievalTrials:
             sys.exit(1)
         retrievalImage = 'images/' + newPics[retNew] + '.png'
         retNew = retNew + 1
-    
-    RetrievalTrials.addData("retIMG", retrievalImage)
-    el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
+        
     retIMG.setImage(retrievalImage)
     sound_pop7.setSound('POP.wav', hamming=True)
     sound_pop7.setVolume(1.0, log=False)
@@ -2360,11 +2361,11 @@ for thisRetrievalTrial in RetrievalTrials:
             thisComponent.setAutoDraw(False)
     RetrievalTrials.addData('retIMG.started', retIMG.tStartRefresh)
     RetrievalTrials.addData('retIMG.stopped', retIMG.tStopRefresh)
-    el_tracker.sendMessage('retImg %s' % retIMG)
     el_tracker.sendMessage('retimgEnding %s' % RetrievalImageClock.getTime())
     sound_pop7.stop()  # ensure sound has stopped at end of routine
     RetrievalTrials.addData('sound_pop7.started', sound_pop7.tStartRefresh)
     RetrievalTrials.addData('sound_pop7.stopped', sound_pop7.tStopRefresh)
+    el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
     # the Routine "RetrievalImage" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -2441,7 +2442,7 @@ for thisRetrievalTrial in RetrievalTrials:
             thisComponent.setAutoDraw(False)
     RetrievalTrials.addData('question_text.started', question_text.tStartRefresh)
     RetrievalTrials.addData('question_text.stopped', question_text.tStopRefresh)
-    el_tracker.sendMessage('methodtextEnding %s' % Q2TextClock.getTime())
+    el_tracker.sendMessage('textEnding %s' % Q2TextClock.getTime())
     
     # ------Prepare to start Routine "Decision"-------
     continueRoutine = True
@@ -2580,14 +2581,14 @@ for thisRetrievalTrial in RetrievalTrials:
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
-    
+    el_tracker.sendMessage ('!V TRIAL_VAR orderResponse %s' %Order_Position_Response.clicked_name[0])
     # -------Ending Routine "Decision"-------
     for thisComponent in DecisionComponents:
         if hasattr(thisComponent, "setAutoDraw"):
             thisComponent.setAutoDraw(False)
     retTrials = (retTrials + 1)
+    el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %retTrials)
     RetrievalTrials.addData("retTrials", str(retTrials))
-    el_tracker.sendMessage('!V TRIAL_VAR retTrials %s' %retTrials)
     RetrievalTrials.addData('decisionQ_2.started', decisionQ_2.tStartRefresh)
     RetrievalTrials.addData('decisionQ_2.stopped', decisionQ_2.tStopRefresh)
     RetrievalTrials.addData('first_left.started', first_left.tStartRefresh)
@@ -2620,9 +2621,9 @@ for thisRetrievalTrial in RetrievalTrials:
     RetrievalTrials.addData('Order_Position_Response.rightButton', buttons[2])
     if len(Order_Position_Response.clicked_name):
         RetrievalTrials.addData('Order_Position_Response.clicked_name', Order_Position_Response.clicked_name[0])
-        el_tracker.sendMessage ('responseClicked %s' %Order_Position_Response.clicked_name[0])
     RetrievalTrials.addData('Order_Position_Response.started', Order_Position_Response.tStart)
     RetrievalTrials.addData('Order_Position_Response.stopped', Order_Position_Response.tStop)
+    
     # the Routine "Decision" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -2700,6 +2701,19 @@ for thisRetrievalTrial in RetrievalTrials:
     RetrievalTrials.addData('clickedSound.started', clickedSound.tStartRefresh)
     RetrievalTrials.addData('clickedSound.stopped', clickedSound.tStopRefresh)
     thisExp.nextEntry()
+    
+#store eye-tracking related data in edf
+# record trial variables to the EDF data file, for details, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
+EncodingTrials.addData("retrievalTrials", str(retTrials))
+RetrievalTrials.addData("retIMG", retrievalImage)
+el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %retTrials)
+el_tracker.sendMessage ('!V TRIAL_VAR orderResponse %s' %Order_Position_Response.clicked_name[0])
+    
+# send a 'TRIAL_RESULT' message to mark the end of trial, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('TRIAL_RESULT %d' % pylink.TRIAL_OK)
     
 # completed numRetrieval repeats of 'RetrievalTrials'
 
@@ -2847,12 +2861,15 @@ EncodingBlock2 = data.TrialHandler(nReps=3, method='random',
     seed=None, name='EncodingBlock2')
 thisExp.addLoop(EncodingBlock2)  # add the loop to the experiment
 thisEncodingBlock2 = EncodingBlock2.trialList[0]  # so we can initialise stimuli with some values
+
+    
 # abbreviate parameter names if possible (e.g. rgb = thisEncodingBlock2.rgb)
 if thisEncodingBlock2 != None:
     for paramName in thisEncodingBlock2:
         exec('{} = thisEncodingBlock2[paramName]'.format(paramName))
 
 for thisEncodingBlock2 in EncodingBlock2:
+    trial_category = 'encoding'
     currentLoop = EncodingBlock2
     # abbreviate parameter names if possible (e.g. rgb = thisEncodingBlock2.rgb)
     if thisEncodingBlock2 != None:
@@ -2947,6 +2964,9 @@ for thisEncodingBlock2 in EncodingBlock2:
     #iterate through trial type and set a new one for each trial
     trialType = trialTypes[eTrials]
     method_Trial = sameDiff[eTrials]
+    el_tracker.sendMessage('!V TRIAL_VAR trialType %s' %trialType)
+    el_tracker.sendMessage('!V TRIAL_VAR trialcategory %s' %trial_category)
+    el_tracker.sendMessage('!V TRIAL_VAR trialIndex %d' %trial_index)
     
     #positions
     leftPos = -0.5, 0.0
@@ -2985,11 +3005,8 @@ for thisEncodingBlock2 in EncodingBlock2:
     
     EncodingTrials.addData ("Trial_Order", trialType)
     thisExp.addData("triplet1", triplet1)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
     thisExp.addData("triplet2", triplet2)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
     thisExp.addData("triplet3", triplet3)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
     Triplet1.setPos(firstPos)
     Triplet1.setImage(triplet1)
     Triplet2.setPos(secondPos)
@@ -3231,7 +3248,6 @@ for thisEncodingBlock2 in EncodingBlock2:
         samePics.append(encodingPics[eTrials][2])
         EncodingTrials.addData("encodingType","same")
         encodingType = 'same'
-        el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
     else:
         nextTrial = random.choice(trialTypes)
         while nextTrial == trialType:
@@ -3246,8 +3262,11 @@ for thisEncodingBlock2 in EncodingBlock2:
         triplet3 = 'images/'+encodingPics[eTrials][list[2]]+'.png'
         EncodingTrials.addData("encodingType","diff")
         encodingType = 'diff'
-        el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
-    
+    el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
+    el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
+    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
     #have to re-state positions and trial types
     if trialType == 'LMR':
         firstPos = leftPos
@@ -3275,13 +3294,9 @@ for thisEncodingBlock2 in EncodingBlock2:
         thirdPos = leftPos
     
     EncodingTrials.addData("triplet1", triplet1)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
     EncodingTrials.addData("triplet2", triplet2)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
     EncodingTrials.addData("triplet3", triplet3)
-    el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
     EncodingTrials.addData("nextTrial", nextTrial)
-    el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
     img1.setPos(firstPos)
     img1.setImage(triplet1)
     img2.setPos(secondPos)
@@ -3419,10 +3434,9 @@ for thisEncodingBlock2 in EncodingBlock2:
         if hasattr(thisComponent, "setAutoDraw"):
             thisComponent.setAutoDraw(False)
     eTrials = eTrials + 1
+    el_tracker.sendMessage('!V TRIAL_VAR eTrials %d' %eTrials)
     EncodingTrials.addData("encodingTrials", str(eTrials))
-    el_tracker.sendMessage('!V TRIAL_VAR eTrials %s' %eTrials)
     print(eTrials)
-    
     EncodingBlock2.addData('img1.started', img1.tStartRefresh)
     EncodingBlock2.addData('img1.stopped', img1.tStopRefresh)
     EncodingBlock2.addData('img2.started', img2.tStartRefresh)
@@ -3660,12 +3674,10 @@ for thisEncodingBlock2 in EncodingBlock2:
     if MethodMouse.clicked_name == methodAns:
         EncodingTrials.addData ("methodCheck", '1')
         methodCheck = 1
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
     else:
         EncodingTrials.addData ("methodCheck", '0')
         methodCheck = 0
-        el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
-    
+
     #store whether or not they answered correctly for the "same" or "different" trial type.
     thisExp.addData("Method Clicked", MethodMouse.clicked_name);
     EncodingBlock2.addData('text.started', text.tStartRefresh)
@@ -3690,6 +3702,8 @@ for thisEncodingBlock2 in EncodingBlock2:
     
     EncodingBlock2.addData('MethodMouse.started', MethodMouse.tStart)
     EncodingBlock2.addData('MethodMouse.stopped', MethodMouse.tStop)
+    el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
+    el_tracker.sendMessage('!V TRIAL_VAR methodClicked %s' %MethodMouse.clicked_name)
     # the Routine "MethodCheck" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -3768,6 +3782,24 @@ for thisEncodingBlock2 in EncodingBlock2:
     EncodingBlock2.addData('clickedSound.stopped', clickedSound.tStopRefresh)
     thisExp.nextEntry()
     
+#store eye-tracking related data in edf
+# record trial variables to the EDF data file, for details, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('!V TRIAL_VAR trialIndex %d' % trial_index)
+el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' % trial_category)
+EncodingTrials.addData("encodingTrials", str(eTrials))
+el_tracker.sendMessage('!V TRIAL_VAR eTrials %d' %eTrials)   
+el_tracker.sendMessage('!V TRIAL_VAR methodCheck %s' %methodCheck)
+el_tracker.sendMessage('!V TRIAL_VAR methodClicked %s' %MethodMouse.clicked_name)
+el_tracker.sendMessage('!V TRIAL_VAR encodingType %s' %encodingType)
+el_tracker.sendMessage('!V TRIAL_VAR triplet1 %s' %triplet1)
+el_tracker.sendMessage('!V TRIAL_VAR triplet2 %s' %triplet2)
+el_tracker.sendMessage('!V TRIAL_VAR triplet3 %s' %triplet3)
+el_tracker.sendMessage('!V TRIAL_VAR nextTrial %s' %nextTrial)
+
+# send a 'TRIAL_RESULT' message to mark the end of trial, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('TRIAL_RESULT %d' % pylink.TRIAL_OK)
 # completed numEncoding repeats of 'EncodingBlock2'
 
 
@@ -3784,6 +3816,7 @@ if thisRetrievalBlock2 != None:
         exec('{} = thisRetrievalBlock2[paramName]'.format(paramName))
 
 for thisRetrievalBlock2 in RetrievalBlock2:
+    trial_category = 'retrieval'
     currentLoop = RetrievalBlock2
     # abbreviate parameter names if possible (e.g. rgb = thisRetrievalBlock2.rgb)
     if thisRetrievalBlock2 != None:
@@ -3792,6 +3825,12 @@ for thisRetrievalBlock2 in RetrievalBlock2:
     
     # ------Prepare to start Routine "RetrievalImage"-------
     continueRoutine = True
+    rtrial_index = RetrievalTrials.thisRepN
+    trial_category= 'retrieval'
+    el_tracker.sendMessage('!V TRIAL_VAR trialCategory %s' %trial_category)
+    el_tracker.sendMessage('!V TRIAL_VAR trialIndex %d' %rtrial_index)
+    el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %retTrials)
+    
     # update component parameters for each repeat
     retrievalImage = None
     
@@ -3816,7 +3855,6 @@ for thisRetrievalBlock2 in RetrievalBlock2:
         retNew = retNew + 1
     
     RetrievalTrials.addData("retIMG", retrievalImage)
-    el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
     retIMG.setImage(retrievalImage)
     sound_pop7.setSound('POP.wav', hamming=True)
     sound_pop7.setVolume(1.0, log=False)
@@ -3900,6 +3938,7 @@ for thisRetrievalBlock2 in RetrievalBlock2:
     RetrievalBlock2.addData('sound_pop7.started', sound_pop7.tStartRefresh)
     RetrievalBlock2.addData('sound_pop7.stopped', sound_pop7.tStopRefresh)
     el_tracker.sendMessage('retImg.ending %s' % RetrievalImageClock.getTime())
+    el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
     # the Routine "RetrievalImage" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -4117,6 +4156,7 @@ for thisRetrievalBlock2 in RetrievalBlock2:
         # refresh the screen
         if continueRoutine:  # don't flip if this routine is over or we'll get a blank screen
             win.flip()
+    el_tracker.sendMessage ('!V TRIAL_VAR orderResponse %s' %Order_Position_Response.clicked_name[0])
     
     # -------Ending Routine "Decision"-------
     for thisComponent in DecisionComponents:
@@ -4124,7 +4164,7 @@ for thisRetrievalBlock2 in RetrievalBlock2:
             thisComponent.setAutoDraw(False)
     retTrials = (retTrials + 1)
     RetrievalTrials.addData("retTrials", str(retTrials))
-    el_tracker.sendMessage('!V TRIAL_VAR retTrials %s' %retTrials)
+    el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %retTrials)
     RetrievalBlock2.addData('decisionQ_2.started', decisionQ_2.tStartRefresh)
     RetrievalBlock2.addData('decisionQ_2.stopped', decisionQ_2.tStopRefresh)
     RetrievalBlock2.addData('first_left.started', first_left.tStartRefresh)
@@ -4157,9 +4197,9 @@ for thisRetrievalBlock2 in RetrievalBlock2:
     RetrievalBlock2.addData('Order_Position_Response.rightButton', buttons[2])
     if len(Order_Position_Response.clicked_name):
         RetrievalBlock2.addData('Order_Position_Response.clicked_name', Order_Position_Response.clicked_name[0])
-        el_tracker.sendMessage('!V TRIAL_VAR responseClicked %s' %Order_Position_Response.clicked_name[0])
-    RetrievalBlock2.addData('Order_Position_Response.started', Order_Position_Response.tStart)
-    RetrievalBlock2.addData('Order_Position_Response.stopped', Order_Position_Response.tStop)
+        RetrievalBlock2.addData('Order_Position_Response.started', Order_Position_Response.tStart)
+        RetrievalBlock2.addData('Order_Position_Response.stopped', Order_Position_Response.tStop)
+    
     # the Routine "Decision" was not non-slip safe, so reset the non-slip timer
     routineTimer.reset()
     
@@ -4241,9 +4281,20 @@ for thisRetrievalBlock2 in RetrievalBlock2:
     thisExp.saveAsWideText(filename+'.csv', delim=',')
     thisExp.saveAsPickle(filename)
     logging.flush()
-    
-# completed numRetrieval repeats of 'RetrievalBlock2'
 
+# completed numRetrieval repeats of 'RetrievalBlock2'
+#store eye-tracking related data in edf
+# record trial variables to the EDF data file, for details, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('!V TRIAL_VAR retIMG %s' %retrievalImage)
+EncodingTrials.addData("retrievalTrials", str(retTrials))
+RetrievalTrials.addData("retIMG", retrievalImage)
+el_tracker.sendMessage('!V TRIAL_VAR retTrials %d' %retTrials)
+el_tracker.sendMessage ('!V TRIAL_VAR orderResponse %s' %Order_Position_Response.clicked_name[0])
+    
+# send a 'TRIAL_RESULT' message to mark the end of trial, see Data
+# Viewer User Manual, "Protocol for EyeLink Data to Viewer Integration"
+el_tracker.sendMessage('TRIAL_RESULT %d' % pylink.TRIAL_OK)
 
 # ------Prepare to start Routine "EndScreen"-------
 continueRoutine = True
@@ -4326,6 +4377,7 @@ win.flip()
 
 # End the eyetracker session
 terminate_task()
+logging.flush()
 
 # these shouldn't be strictly necessary (should auto-save)
 thisExp.saveAsWideText(filename+'.csv', delim=',')
